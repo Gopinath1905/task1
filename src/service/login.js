@@ -2,6 +2,7 @@ const Login = require('../model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { userSchema } = require('../validation/valid');
+const sendMail = require('../mail/mailservice');
 
 
 exports.signup = async(payload) => {
@@ -19,6 +20,8 @@ exports.signup = async(payload) => {
                 console.log(hash_password)
                 const user = await Login.query().insert({userName:name,email:email,DOB:DOB,userPassword:hash_password});
                 console.log(user)
+                const mail = await sendMail(payload);
+                console.log(mail)
                 return user
             }
             else return "User Already in use"
