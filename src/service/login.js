@@ -2,7 +2,9 @@ const Login = require('../model');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { userSchema } = require('../validation/valid');
-const sendMail = require('../mail/mailservice');
+const mailservice = require('../mail/mailservice');
+const multer = require('multer');
+const path = require('path');
 
 
 exports.signup = async(payload) => {
@@ -13,16 +15,18 @@ exports.signup = async(payload) => {
         try{
             const validate = await Login.query().findOne({email:payload.email})
             if(!validate){
-                const name = payload.userName
+              const name = payload.userName
                 const email = payload.email
                 const DOB = payload.DOB
+                const uploadProfilePicture = payload.ProfilePicture
                 const hash_password = await bcrypt.hash(payload.userPassword, 10);
-                console.log(hash_password)
-                const user = await Login.query().insert({userName:name,email:email,DOB:DOB,userPassword:hash_password});
-                console.log(user)
-                const mail = await sendMail(payload);
+                // console.log(hash_password)
+                const user = await Login.query().insert([{userName:name,email:email,DOB:DOB,userPassword:hash_password}]);
+                // console.log(user)
+                const mail = await mailservice.userMail(payload);
                 console.log(mail)
                 return user
+                
             }
             else return "User Already in use"
             }
@@ -34,7 +38,7 @@ exports.signup = async(payload) => {
         catch (err) {
             console.log(err)
             
-           return err,"validation error"
+           return err || "validation error"
         }
 }
 
@@ -57,4 +61,23 @@ exports.login = async(payload) => {
     catch(err){
         return err
     }
+}
+
+
+exports.updateprofile = async(payload) =>{
+    const user = await Login.query().findOne({ProfilePicture:payload.ProfilePicture})
+    console.log(user)
+    const storage = multer.diskStorage({
+        destination: function (payload, cb) {
+          cb(null, './multer/uploads')
+        },
+        filename: function (payload, cb) {
+          cb(null, payload.fieldname + '-' + Date.now() + path.extname(file.originalname)); 
+        }
+    })
+       
+    const updateprofile = multer({ 
+        storage: storage
+    })
+    
 }

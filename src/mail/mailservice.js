@@ -1,31 +1,63 @@
 require("dotenv").config();
-var nodemailer = require('nodemailer');
+const nodemailer = require("nodemailer");
+const mailerhbs = require("nodemailer-express-handlebars");
+const path = require('path');
 
-
-const mail = async function (mailOption) {
-    var transporter = nodemailer.createTransport({
-        host: 'smtp.gmail.com',
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
         port: 465,
         secure:true,
-        auth: {
-            user: process.env.MAILER_USER,
-            pass: process.env.MAILER_PASSWORD
+    secureConnection: false,
+    logger: false,
+    debug: true,
+    auth: {
+        user: process.env.MAILER_USER,
+        pass: process.env.MAILER_PASSWORD
+    }
+}, {
+    from: process.env.MAILER_USER
+});
+const sendMail = async (to, subject, html, context, attachments) => {
+    console.log("sendMail function here------",to, subject, html, context, attachments)
+    if (process.env.SMTP_ENABLED) {
+        let eOptions = {
+            to: to,
+            subject: subject
         }
-    });
-    var mailOptions = {
-        from: process.env.MAILER_USER,
-        subject: 'Test mail',
-        to: mailOption.email,
-        html: 'welcome'
-    };
+        if (context) {
+            eOptions.template = html;
+            eOptions.context = context;
+            if (attachments) eOptions.attachments = attachments;
 
-    try {
-        var info = await transporter.sendMail(mailOptions);
-        console.log(info.response);
-        return { status: 200, response: info.response };
-    } catch (e) {
-        console.log(e);
-        return { error: e, status: 500 };
+            console.log(" eOptions >>>>>>>>>>>>>>>>>>>>>", eOptions);
+            return transporter.sendMail(eOptions, function (err, info) {
+                console.log("done", html);
+                console.log("err, info >>>>>>>>>", err, info);
+                transporter.close()
+            });
+        } else {
+            eOptions.html = html;
+            if (attachments) eOptions.attachments = attachments
+            return transporter.sendMail(eOptions);
+        }
     }
 };
-module.exports = mail;
+const userMail = async function (data) {
+    console.log(data)
+     let careerOptions = {
+        viewEngine: {
+            extname: '.hbs',
+            layoutsDir: './src/views',
+            defaultLayout: 'email'
+        },
+        viewPath: './src/views',
+        extName: '.hbs'
+    };
+    
+    transporter.use('compile', mailerhbs(careerOptions));
+     return sendMail("gopinathseeniappan@gmail.com","position", "email", data)
+
+ };
+module.exports = {
+    userMail
+};

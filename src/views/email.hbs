@@ -1,0 +1,37 @@
+<!DOCTYPE>
+<html>
+  <head>
+<script rel="styleesheet" href="../views/email.style.css"></script> 
+ </head>
+  <body>
+<h2>Welcome</h2>
+<table border="1">
+<tr>
+  <th>{{userName}}</th>
+  </br>
+  <th>{{Email}}</th>
+  </br>
+   <th>{{DOB}}</th>
+   </br>   
+</tr>
+{{#each user}}
+
+        <tr>
+            <td style="text-align:center; border: 1px solid black;">
+                {{this.userName}}
+            </td>
+            </br>
+            <td style="text-align:center; border: 1px solid black;" >
+                {{this.email}}
+            </td >
+            </br>
+            <td style="text-align: center; border: 1px solid black;">
+                {{this.DOB}}
+            </td>
+        </tr>
+        {{/each }}
+</table>
+<h3>Thank you and Regards</h3>
+  </body>
+
+</html>
