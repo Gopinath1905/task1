@@ -1,7 +1,7 @@
 const { Model} = require('objection')
 const Hapi = require('@hapi/hapi');
 const knex = require('knex')(require('./src/database/config'))
-const route= require('./axios/router')
+const route= require('./router/router1')
 
 const init = async () => {
     knex
